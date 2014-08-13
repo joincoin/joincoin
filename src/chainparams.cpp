@@ -31,18 +31,18 @@ public:
         nDefaultPort = 17941;
         nRPCPort = 17942;
 	bnProofOfWorkLimit[ALGO_SHA]  = CBigNum(~uint256(0) >> 20);
-	bnProofOfWorkLimit[ALGO_X11]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_X13]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_X15]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_SCRYPT]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_NIST5]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_GROESTLE]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_PENTABLAKE]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_WHIRLPOOL]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_LUFFA]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_KECCAK]  = CBigNum(~uint256(0) >> 26);
-	bnProofOfWorkLimit[ALGO_QUARK]  = CBigNum(~uint256(0) >> 26);
-        bnProofOfWorkLimit[ALGO_BASTION]  = CBigNum(~uint256(0) >> 26);
+	bnProofOfWorkLimit[ALGO_X11]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_X13]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_X15]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_SCRYPT]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_NIST5]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_GROESTLE]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_PENTABLAKE]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_WHIRLPOOL]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_LUFFA]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_KECCAK]  = CBigNum(~uint256(0) >> 20);
+	bnProofOfWorkLimit[ALGO_QUARK]  = CBigNum(~uint256(0) >> 20);
+        bnProofOfWorkLimit[ALGO_BASTION]  = CBigNum(~uint256(0) >> 20);
         nSubsidyHalvingInterval = 80000;
 
         // Build the genesis block. Note that the output of the genesis coinbase cannot
