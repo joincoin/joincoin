@@ -1323,7 +1323,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 }
 
 
-unsigned int static DigiShield(const CBlockIndex* pindexLast, const CBlockHeader *pblocka, int algo)
+unsigned int static DigiShield_Buggy(const CBlockIndex* pindexLast, const CBlockHeader *pblocka, int algo)
 {
 
     int64 retargetTimespan = nTargetTimespanDigi;
@@ -1381,15 +1381,87 @@ unsigned int static DigiShield(const CBlockIndex* pindexLast, const CBlockHeader
     bnNew = Params().ProofOfWorkLimit(algo);
 
     /// debug print
-    printf("GetNextWorkRequired: DIGISHIELD RETARGET\n");
+    printf("GetNextWorkRequired: DIGISHIELD RETARGET (OLD VERSION)\n");
     printf("nTargetTimespan = %"PRI64d" nActualTimespan = %"PRI64d"\n", retargetTimespan, nActualTimespan);
     printf("Before: %08x %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
+    printf("Before (for alg): %08x %s\n", pindexPrev->nBits, CBigNum().SetCompact(pindexPrev->nBits).getuint256().ToString().c_str());
     printf("After: %08x %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 
     return bnNew.GetCompact();
 }
+
+unsigned int static DigiShield(const CBlockIndex* pindexLast, const CBlockHeader *pblocka, int algo)
+{
+
+    int64 retargetTimespan = nTargetTimespanDigi;
+    int64 retargetInterval = nTargetTimespanDigi / nTargetSpacingDigi;
+
+    unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+
+    const CBlockIndex* pindexPrev = GetLastBlockIndexForAlgo(pindexLast, algo);
+
+    // First block
+    if (pindexPrev == NULL)
+        return nProofOfWorkLimit;
+
+    // Only change once per interval
+    if ((pindexPrev->nHeight+1) % retargetInterval != 0)
+    {
+        return pindexPrev->nBits;
+    }
+
+    // This fixes an issue where a 51% attack can change difficulty at will.
+    // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
+    int blockstogoback = retargetInterval-1;
+    if ((pindexPrev->nHeight+1) != retargetInterval)
+        blockstogoback = retargetInterval;
+
+    // Go back by what we want to be 14 days worth of blocks
+    const CBlockIndex* pindexFirst = pindexPrev;
+    for (int i = 0; pindexFirst && i < blockstogoback; i++) {
+        pindexFirst = pindexFirst->pprev;
+        pindexFirst = GetLastBlockIndexForAlgo(pindexFirst, algo);
+    }
+
+    if (pindexFirst == NULL)
+        return nProofOfWorkLimit; // not nAveragingInterval blocks of this algo available
+
+    // Limit adjustment step
+    int64 nActualTimespan = pindexPrev->GetBlockTime() - pindexFirst->GetBlockTime();
+    printf(" nActualTimespan = %"PRI64d" before bounds\n", nActualTimespan);
+    CBigNum bnNew;
+    bnNew.SetCompact(pindexPrev->nBits);
+
+ //DigiShield implementation - thanks to RealSolid & WDC for this code
+// amplitude filter - thanks to daft27 for this code
+        nActualTimespan = retargetTimespan + (nActualTimespan - retargetTimespan)/8;
+        printf("DIGISHIELD RETARGET\n");
+        if (nActualTimespan < (retargetTimespan - (retargetTimespan/4)) ) nActualTimespan = (retargetTimespan - (retargetTimespan/4));
+        if (nActualTimespan > (retargetTimespan + (retargetTimespan/2)) ) nActualTimespan = (retargetTimespan + (retargetTimespan/2));
+    // Retarget
+
+    bnNew *= nActualTimespan;
+    bnNew /= retargetTimespan;
+
+    if (bnNew > Params().ProofOfWorkLimit(algo))
+    bnNew = Params().ProofOfWorkLimit(algo);
+
+    /// debug print
+    printf("GetNextWorkRequired: DIGISHIELD RETARGET\n");
+    printf("nTargetTimespan = %"PRI64d" nActualTimespan = %"PRI64d"\n", retargetTimespan, nActualTimespan);
+    printf("Before: %08x %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
+    printf("Before (for alg): %08x %s\n", pindexPrev->nBits, CBigNum().SetCompact(pindexPrev->nBits).getuint256().ToString().c_str());
+    printf("After: %08x %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
+
+    return bnNew.GetCompact();
+}
+
+
     
 unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo){
+	int nHeight = pindexLast->nHeight + 1;
+	if (nHeight < 417) return DigiShield_Buggy(pindexLast, pblock, algo);
+	else
 	return DigiShield(pindexLast, pblock, algo);
 }
 
